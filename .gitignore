@@ -1,5 +1,10 @@
 /build/
+/build-clangd/
 /build-*/
+/out/
+/compile_commands.json
+/CMakeUserPresets.json
+/.vs/
 /raylib/
 /ROLLBACK_REVIEW.ps1
 *.obj

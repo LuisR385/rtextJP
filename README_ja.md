@@ -190,21 +190,80 @@ rtextjp_01_hello_japanese C:/fonts/MyJapaneseFont.ttf
 
 詳しい順番は [examples/README.md](examples/README.md) を参照してください。
 
-## CMakeでビルド
+## CMake開発環境
 
-RTextJPはraylibバイナリをソースリポジトリへ同梱しません。CMakeは最初にインストール済みraylib
-6.0を探し、見つからない場合だけ、明示的なオプションにより公式raylibの固定タグを取得できます。
+RTextJPはraylibバイナリをソースリポジトリへ同梱しません。開発用の共有presetは公式raylib `6.0`の
+FetchContent fallbackを有効にしますが、インストール済みraylibがあればそちらを優先します。初回の
+fallback configureにはGitとネットワーク接続が必要で、以降はCMakeのキャッシュを利用します。
+
+### Visual Studio 2022 / MSVCの通常開発
+
+Visual Studio用presetに必要なのは、CMakeとVisual Studio 2022のC++ワークロードです。64-bit MSVCを
+使用し、NinjaやLLVMは不要です。最初にconfigureし、build presetで構成を選びます。
 
 ```text
-cmake -S . -B build -DRTEXTJP_BUILD_EXAMPLES=ON -DRTEXTJP_BUILD_TESTS=ON -DRTEXTJP_FETCH_RAYLIB=ON
-cmake --build build
-ctest --test-dir build --output-on-failure
+cmake --preset vs2022
+cmake --build --preset vs2022-debug
 ```
 
-`RTEXTJP_FETCH_RAYLIB` の既定値は `OFF` です。そのため、RTextJPを別プロジェクトへ組み込んでも
-予期せずネットワークへ接続しません。インストール済みraylibを使用する場合は、このオプションを
-省略してください。
-ライブラリとして組み込むだけなら、`include/` とraylibのincludeパスをコンパイラへ追加するだけです。
+最適化したビルドは次のコマンドです。
+
+```text
+cmake --build --preset vs2022-release
+```
+
+`vs2022`はexampleを有効にし、Visual Studio solutionを `build-vs2022/` に生成します。Visual Studioは
+マルチコンフィグgeneratorなので、configure presetでは `CMAKE_BUILD_TYPE`を設定しません。
+メニュー形式で起動する既存の `START_HERE.bat` も引き続き利用できます。
+
+### Visual Studio 2022 / MSVCでテスト
+
+テスト用presetは別のビルドディレクトリを使用し、exampleを無効、テストを有効にします。
+
+```text
+cmake --preset vs2022-tests
+cmake --build --preset vs2022-tests-debug
+ctest --preset vs2022-tests-debug
+```
+
+### Ninja・clangd・Zedの補完
+
+Visual Studio generatorは `compile_commands.json`を生成しません。NinjaとCコンパイラを利用できる
+開発者は、補完専用ディレクトリへコンパイルデータベースを生成できます。
+
+```text
+cmake --preset clangd
+```
+
+WindowsでNinjaからMSVCを使う場合は、**x64 Native Tools Command Prompt for VS 2022**で実行します。
+このpresetは `CMAKE_C_COMPILER`、`CMAKE_MAKE_PROGRAM`、LLVMの場所など、環境固有の絶対パスを
+固定しません。exampleとテストを有効にし、補完に必須ではないdocs galleryは無効のままにします。
+
+コマンドは `build-clangd/compile_commands.json`を生成します。補完だけならビルドは不要です。
+リポジトリの `.clangd`は相対パスでこのディレクトリを参照し、Zed標準のCサポートはclangdを
+使用します。ソース、CMakeオプション、toolchainの変更後は再configureしてください。Zedを既に
+開いていた場合は、コマンドパレットから `editor: restart language server`を一度実行します。
+
+コンパイルデータベースには、生成したPCの絶対パスが含まれます。そのため `build-clangd/`と
+ルート直下の `compile_commands.json`はGitの無視対象であり、コミットしません。
+
+### ローカルのコンパイラ・Ninjaパス
+
+`CMakeUserPresets.json`はGitの無視対象で、環境固有の上書きに使用します。Ninjaやコンパイラが
+`PATH`にない場合は、`clangd`を継承する `clangd-local`などのローカルpresetを作り、そこで
+`CMAKE_MAKE_PROGRAM`や `CMAKE_C_COMPILER`を指定して、そのローカルpresetを実行してください。
+これらのパスは `CMakePresets.json`や `.clangd`へ追加しません。
+
+### その他のgenerator
+
+ほかのプラットフォームでは、通常のgeneratorを選ぶかCMakeの既定値を使用できます。
+
+```text
+cmake -S . -B build -DRTEXTJP_BUILD_EXAMPLES=ON -DRTEXTJP_FETCH_RAYLIB=ON
+cmake --build build
+```
+
+ライブラリとして組み込むだけなら、`include/`とraylibのincludeパスをコンパイラへ追加するだけです。
 
 ## WindowsデモZIP
 
