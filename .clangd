@@ -2,7 +2,3 @@ CompileFlags:
   Add:
     - -xc
     - -std=c99
-    - -IC:/dev/rtext/rtext/include
-    - -IC:/dev/rtext/rtext/raylib/include
-    - -IC:/dev/rtext/rtext/examples
-    - -DUSE_LIBTYPE_SHARED
