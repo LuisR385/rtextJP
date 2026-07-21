@@ -1,0 +1,89 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 22,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "rtextjp-base",
+      "hidden": true,
+      "cacheVariables": {
+        "RTEXTJP_FETCH_RAYLIB": "ON",
+        "RTEXTJP_BUILD_DOCS_GALLERY": "OFF",
+        "RTEXTJP_BUILD_DEMO_PACKAGE": "OFF",
+        "RTEXTJP_ENABLE_SANITIZERS": "OFF"
+      }
+    },
+    {
+      "name": "vs2022",
+      "displayName": "Visual Studio 2022 development",
+      "description": "Build the examples with Visual Studio 2022 and MSVC.",
+      "inherits": "rtextjp-base",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build-vs2022",
+      "cacheVariables": {
+        "RTEXTJP_BUILD_EXAMPLES": "ON",
+        "RTEXTJP_BUILD_TESTS": "OFF"
+      }
+    },
+    {
+      "name": "vs2022-tests",
+      "displayName": "Visual Studio 2022 tests",
+      "description": "Build and run the test suite with Visual Studio 2022 and MSVC.",
+      "inherits": "vs2022",
+      "binaryDir": "${sourceDir}/build-vs2022-tests",
+      "cacheVariables": {
+        "RTEXTJP_BUILD_EXAMPLES": "OFF",
+        "RTEXTJP_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "clangd",
+      "displayName": "clangd compilation database (Ninja)",
+      "description": "Generate compile_commands.json for examples and tests with Ninja.",
+      "inherits": "rtextjp-base",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-clangd",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "RTEXTJP_BUILD_EXAMPLES": "ON",
+        "RTEXTJP_BUILD_TESTS": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "vs2022-debug",
+      "displayName": "Visual Studio 2022 Debug",
+      "configurePreset": "vs2022",
+      "configuration": "Debug"
+    },
+    {
+      "name": "vs2022-release",
+      "displayName": "Visual Studio 2022 Release",
+      "configurePreset": "vs2022",
+      "configuration": "Release"
+    },
+    {
+      "name": "vs2022-tests-debug",
+      "displayName": "Visual Studio 2022 tests (Debug)",
+      "configurePreset": "vs2022-tests",
+      "configuration": "Debug"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "vs2022-tests-debug",
+      "displayName": "Visual Studio 2022 tests (Debug)",
+      "configurePreset": "vs2022-tests",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}

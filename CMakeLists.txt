@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.22)
 
 project(RTextJP VERSION 0.1.0 LANGUAGES C)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 option(RTEXTJP_BUILD_EXAMPLES "Build the beginner examples" ON)
 option(RTEXTJP_BUILD_TESTS "Build internal RTextJP tests" OFF)
 option(RTEXTJP_BUILD_DOCS_GALLERY "Build the documentation screenshot generator" OFF)

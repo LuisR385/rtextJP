@@ -85,39 +85,81 @@ int main(void)
 
 Other translation units include the header without defining `RTEXTJP_IMPLEMENTATION`.
 
-## Building the examples
+## CMake development environments
 
-RTextJP does not require a committed raylib binary. CMake first looks for an installed raylib 6.0
-package. If none is found, explicitly enable the pinned FetchContent fallback:
+RTextJP does not require a committed raylib binary. The shared development preset enables the
+pinned raylib `6.0` FetchContent fallback, while CMake still prefers an installed raylib package.
+The first fallback configure requires Git and network access; later runs use CMake's cached copy.
+
+### Visual Studio 2022 / MSVC development
+
+The Visual Studio presets require CMake and the Visual Studio 2022 C++ workload. They use the
+64-bit MSVC toolchain and do not require Ninja or LLVM. Configure once, then choose a configuration
+through a build preset:
+
+```sh
+cmake --preset vs2022
+cmake --build --preset vs2022-debug
+```
+
+For an optimized build:
+
+```sh
+cmake --build --preset vs2022-release
+```
+
+The `vs2022` configure preset enables the examples and writes the Visual Studio solution to
+`build-vs2022/`. It deliberately does not set `CMAKE_BUILD_TYPE`, because Visual Studio is a
+multi-config generator. `START_HERE.bat` remains available as the menu-driven Windows launcher.
+
+### Visual Studio 2022 / MSVC tests
+
+The test preset uses a separate build tree with examples disabled and tests enabled:
+
+```sh
+cmake --preset vs2022-tests
+cmake --build --preset vs2022-tests-debug
+ctest --preset vs2022-tests-debug
+```
+
+### Ninja, clangd, and Zed completion
+
+Visual Studio generators do not produce `compile_commands.json`. Developers who have Ninja and a
+C compiler available can generate one in a dedicated directory:
+
+```sh
+cmake --preset clangd
+```
+
+On Windows, an **x64 Native Tools Command Prompt for VS 2022** makes MSVC available to Ninja. The
+preset does not hard-code `CMAKE_C_COMPILER`, `CMAKE_MAKE_PROGRAM`, an LLVM installation, or any
+machine-specific path. It enables examples and tests, while leaving the optional docs gallery off.
+
+The command creates `build-clangd/compile_commands.json`; building that tree is not required for
+completion. The repository `.clangd` points to it with a relative path, and Zed's C support uses
+clangd. Re-run the configure command after changing sources, CMake options, or toolchains. If Zed
+was already open, run `editor: restart language server` once from the command palette.
+
+A compilation database contains absolute paths from the machine that generated it. Therefore
+`build-clangd/` and a root `compile_commands.json` are ignored and must not be committed.
+
+### Local compiler and Ninja paths
+
+`CMakeUserPresets.json` is ignored by Git and is the appropriate place for machine-specific
+overrides. If Ninja or a compiler is not on `PATH`, create a local preset such as `clangd-local`
+that inherits `clangd`, set `CMAKE_MAKE_PROGRAM` and/or `CMAKE_C_COMPILER` there, and run that local
+preset. Do not add those paths to `CMakePresets.json` or `.clangd`.
+
+### Other generators and sanitizers
+
+On other platforms, select the usual local generator or let CMake select its default:
 
 ```sh
 cmake -S . -B build -DRTEXTJP_BUILD_EXAMPLES=ON -DRTEXTJP_FETCH_RAYLIB=ON
-cmake --build build --config Debug
-```
-
-`RTEXTJP_FETCH_RAYLIB` defaults to `OFF`, so embedding RTextJP does not unexpectedly access the
-network. When enabled, it downloads the official raylib `6.0` Git tag and disables raylib's own
-examples.
-
-On Windows, `START_HERE.bat` performs the same pinned fetch automatically and opens a menu for the
-examples. The first configure requires Git and network access; later builds use CMake's cached copy.
-
-To use a system package instead, omit the fetch option:
-
-```sh
-cmake -S . -B build -DRTEXTJP_BUILD_EXAMPLES=ON
 cmake --build build
 ```
 
-## Tests and sanitizers
-
-```sh
-cmake -S . -B build -DRTEXTJP_BUILD_EXAMPLES=OFF -DRTEXTJP_BUILD_TESTS=ON -DRTEXTJP_FETCH_RAYLIB=ON
-cmake --build build
-ctest --test-dir build --output-on-failure
-```
-
-ASan and UBSan are available with Clang or GCC:
+ASan and UBSan remain available with Clang or GCC:
 
 ```sh
 cmake -S . -B build-sanitize -DCMAKE_C_COMPILER=clang -DRTEXTJP_BUILD_EXAMPLES=OFF -DRTEXTJP_BUILD_TESTS=ON -DRTEXTJP_FETCH_RAYLIB=ON -DRTEXTJP_ENABLE_SANITIZERS=ON
