@@ -1,0 +1,9 @@
+/build/
+/build-*/
+/raylib/
+/ROLLBACK_REVIEW.ps1
+*.obj
+*.pdb
+*.ilk
+examples/resources/japanese.ttf
+examples/resources/japanese.otf
