@@ -7,6 +7,7 @@
   <img alt="Language: C99" src="https://img.shields.io/badge/language-C99-A8B9CC?style=flat-square&logo=c&logoColor=white">
   <img alt="C++ compatible header" src="https://img.shields.io/badge/C%2B%2B-header%20compatible-00599C?style=flat-square&logo=cplusplus&logoColor=white">
   <img alt="Single header" src="https://img.shields.io/badge/distribution-single--header-6E40C9?style=flat-square">
+  <a href="https://github.com/LuisR385/rtextJP/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/LuisR385/rtextJP/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/raysan5/raylib"><img alt="raylib 6.0 or later" src="https://img.shields.io/badge/raylib-6.0%2B-000000?style=flat-square&logo=raylib&logoColor=white"></a>
   <img alt="Platforms: Windows, Linux, macOS" src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-2F80ED?style=flat-square">
   <img alt="Build: CMake 3.22 or later" src="https://img.shields.io/badge/CMake-3.22%2B-064F8C?style=flat-square&logo=cmake&logoColor=white">
