@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "include/**"
+      - "examples/**"
+      - "tests/**"
+      - "cmake/**"
+      - "CMakeLists.txt"
+      - "CMakePresets.json"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    paths:
+      - "include/**"
+      - "examples/**"
+      - "tests/**"
+      - "cmake/**"
+      - "CMakeLists.txt"
+      - "CMakePresets.json"
+      - ".github/workflows/ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows / MSVC
+            os: windows-latest
+            build_type: Release
+            cmake_args: ""
+            build_examples: "ON"
+            sanitizers: "OFF"
+          - name: macOS / AppleClang
+            os: macos-latest
+            build_type: Release
+            cmake_args: "-DCMAKE_C_COMPILER=clang"
+            build_examples: "ON"
+            sanitizers: "OFF"
+          - name: Linux / GCC
+            os: ubuntu-latest
+            build_type: Release
+            cmake_args: "-DCMAKE_C_COMPILER=gcc"
+            build_examples: "ON"
+            sanitizers: "OFF"
+          - name: Linux / Clang / ASan+UBSan
+            os: ubuntu-latest
+            build_type: Debug
+            cmake_args: "-DCMAKE_C_COMPILER=clang"
+            build_examples: "OFF"
+            sanitizers: "ON"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            libasound2-dev \
+            libgl1-mesa-dev \
+            libglu1-mesa-dev \
+            libx11-dev \
+            libxcursor-dev \
+            libxext-dev \
+            libxfixes-dev \
+            libxi-dev \
+            libxinerama-dev \
+            libxrandr-dev \
+            libwayland-dev \
+            libxkbcommon-dev
+
+      - name: Configure
+        run: >-
+          cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DRTEXTJP_FETCH_RAYLIB=ON
+          -DRTEXTJP_BUILD_EXAMPLES=${{ matrix.build_examples }}
+          -DRTEXTJP_BUILD_TESTS=ON
+          -DRTEXTJP_BUILD_DOCS_GALLERY=OFF
+          -DRTEXTJP_BUILD_DEMO_PACKAGE=OFF
+          -DRTEXTJP_ENABLE_SANITIZERS=${{ matrix.sanitizers }}
+          -DBUILD_SHARED_LIBS=OFF
+          ${{ matrix.cmake_args }}
+
+      - name: Build
+        run: cmake --build build --config ${{ matrix.build_type }} --parallel 2
+
+      - name: Test
+        run: ctest --test-dir build --build-config ${{ matrix.build_type }} --output-on-failure
