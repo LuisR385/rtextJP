@@ -1966,7 +1966,6 @@ RTEXTJPAPI void RTextJPDraw(const char *text, Vector2 position, RTextJPStyle sty
 RTEXTJPAPI void RTextJPDrawEx(const char *text, Vector2 position, Vector2 origin, float rotation, float fontSize, float spacing, RTextJPStyle style)
 {
     const char *cursor = text;
-    float offsetX = 0.0f;
 
     if (text == NULL) return;
 
