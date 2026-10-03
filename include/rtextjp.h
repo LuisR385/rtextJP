@@ -306,6 +306,22 @@ RTEXTJPAPI RTextJPMetrics RTextJPMeasure(const char *text, float maxWidth, RText
 RTEXTJPAPI void RTextJPDraw(const char *text, Vector2 position, RTextJPStyle style);
 
 /**
+ * \brief 指定位置からテキストを拡張オプション付きで描画します。
+ *
+ * 改行は処理しますが、自動折り返し・揃え・クリップは行いません。
+ *
+ * 
+ * \par English
+ * Draws text at a position with additional options.
+ */
+RTEXTJPAPI void RTextJPDrawEx(const char *text,
+                              Vector2 position, Vector2 origin,
+                              float rotation, float fontSize, 
+                              float spacing, Color tint
+);
+
+
+/**
  * \brief UTF-8テキストを矩形内へ折り返して描画します。
  *
  * 日本語は文字間、英語は空白を優先して折り返します。style.kinsoku がtrueなら、
@@ -1837,6 +1853,47 @@ static void rtextjp_draw_range(const char *begin, const char *end, Vector2 posit
     }
 }
 
+static void rtextjp_draw_range_ex(const char *begin, const char *end, Vector2 position,
+                                Vector2 origin, float rotation, RTextJPStyle style)
+{
+    const char *cursor = begin;
+    int index = 0;
+
+    float rad = rotation * DEG2RAD;
+    float cosRotation = cosf(rad);
+    float sinRotation = sinf(rad);
+
+    while ((cursor != NULL) && (cursor < end) && (*cursor != '\0')) {
+        int bytes = 0;
+        int codepoint = RTextJPUtf8Decode(cursor, &bytes);
+        float width = 0.0f;
+        if (bytes <= 0) break;
+
+        if (index > 0) position.x += style.spacing;
+        width = rtextjp_visible_codepoint_width(style, codepoint);
+        if (codepoint != '\t') {
+
+            //TODO : 名前と変数の整理をする
+            float pivotX = position.x - origin.x;
+            float pivotY = position.y - origin.y;
+
+            Vector2 rotatedPosition = {
+                pivotX * cosRotation - pivotY * sinRotation + origin.x,
+                pivotX * sinRotation + pivotY * cosRotation + origin.y
+            };
+
+            //回転計算後にCodePointを描画するための位置を計算し、描画する
+            //calculated rotated position and draw the codepoint.
+            DrawTextCodepoint(style.font, codepoint, rotatedPosition,
+                              style.fontSize, style.color); 
+
+        }
+        position.x += width;
+        cursor += bytes;
+        index++;
+    }
+}
+
 RTEXTJPAPI RTextJPMetrics RTextJPMeasure(const char *text, float maxWidth, RTextJPStyle style)
 {
     RTextJPMetrics metrics = { 0 };
@@ -1876,6 +1933,37 @@ RTEXTJPAPI void RTextJPDraw(const char *text, Vector2 position, RTextJPStyle sty
         cursor = line.next;
         position.y += style.fontSize + style.lineSpacing;
     }
+}
+
+RTEXTJPAPI void RTextJPDrawEx(const char *text, Vector2 position, Vector2 origin, float rotation, float fontSize, float spacing, Color tint)
+{
+    const char *cursor = text;
+    float offsetX = 0.0f;
+
+    if (text == NULL) return;
+
+    while (*cursor != '\0')
+    {
+        int bytes = 0;
+        int codepoint = RTextJPUtf8Decode(cursor, &bytes);
+
+        if (bytes <= 0) break;
+
+        // 1. codepoint取得
+        // 2. glyph index取得
+        // 3. glyphのsource rect取得
+        // 4. glyphの描画サイズ計算
+        // 5. offsetXからローカル位置計算
+        // 6. originを考慮
+        // 7. rotation
+        // 8. DrawTextureProなどで描画
+        // 9. advance + spacing
+
+        cursor += bytes;
+    }
+
+
+
 }
 
 static float rtextjp_aligned_x(Rectangle bounds, float lineWidth, RTextJPAlign alignment)
