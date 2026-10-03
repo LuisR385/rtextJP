@@ -1897,8 +1897,8 @@ static void rtextjp_draw_range_ex(const char *begin, const char *end, Vector2 po
 
             //NOTE : use source. -> dest rect for DrawTexturePro.
             Rectangle dest = {
-                rotatedPosition.x + glyph.offsetX * scale,
-                rotatedPosition.y + glyph.offsetY * scale,
+                rotatedPosition.x,
+                rotatedPosition.y,
                 source.width * scale,
                 source.height * scale
             };
