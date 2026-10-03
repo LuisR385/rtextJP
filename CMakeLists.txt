@@ -111,7 +111,9 @@ if(RTEXTJP_BUILD_EXAMPLES)
         04_vertical_writing
         05_text_input
         06_utf8_tools
-        07_character_sets)
+        07_character_sets
+        08_text_rotate
+    )
 
     foreach(example IN LISTS RTEXTJP_EXAMPLE_SOURCES)
         add_executable(rtextjp_${example} "examples/${example}.c")
