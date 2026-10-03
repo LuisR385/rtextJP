@@ -20,6 +20,9 @@ int main(void)
         NULL
     );
 
+    //回転を考慮して品質を向上させる
+    SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR); 
+
     if (!IsFontValid(font))
     {
         TraceLog(LOG_ERROR, "Failed to load Japanese font.");
