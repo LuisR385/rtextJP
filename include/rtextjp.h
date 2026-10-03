@@ -317,7 +317,7 @@ RTEXTJPAPI void RTextJPDraw(const char *text, Vector2 position, RTextJPStyle sty
 RTEXTJPAPI void RTextJPDrawEx(const char *text,
                               Vector2 position, Vector2 origin,
                               float rotation, float fontSize, 
-                              float spacing, Color tint
+                              float spacing, RTextJPStyle style
 );
 
 
@@ -1872,20 +1872,48 @@ static void rtextjp_draw_range_ex(const char *begin, const char *end, Vector2 po
         if (index > 0) position.x += style.spacing;
         width = rtextjp_visible_codepoint_width(style, codepoint);
         if (codepoint != '\t') {
+            int glyphIndex = GetGlyphIndex(style.font, codepoint);
+            GlyphInfo glyph = style.font.glyphs[glyphIndex];
+
+            float scale = style.fontSize / (float)style.font.baseSize;
+
+            Vector2 glyphPosition = {
+                position.x + glyph.offsetX * scale,
+                position.y + glyph.offsetY * scale
+            };
 
             //TODO : 名前と変数の整理をする
-            float pivotX = position.x - origin.x;
-            float pivotY = position.y - origin.y;
+            float pivotX = glyphPosition.x - origin.x;
+            float pivotY = glyphPosition.y - origin.y;
 
             Vector2 rotatedPosition = {
                 pivotX * cosRotation - pivotY * sinRotation + origin.x,
                 pivotX * sinRotation + pivotY * cosRotation + origin.y
             };
 
+
+            //NOTE : font atlas recs.
+            Rectangle source = style.font.recs[glyphIndex];
+
+            //NOTE : use source. -> dest rect for DrawTexturePro.
+            Rectangle dest = {
+                rotatedPosition.x + glyph.offsetX * scale,
+                rotatedPosition.y + glyph.offsetY * scale,
+                source.width * scale,
+                source.height * scale
+            };
+
+
             //回転計算後にCodePointを描画するための位置を計算し、描画する
             //calculated rotated position and draw the codepoint.
-            DrawTextCodepoint(style.font, codepoint, rotatedPosition,
-                              style.fontSize, style.color); 
+            DrawTexturePro(
+                style.font.texture,
+                source,
+                dest,
+                (Vector2){ 0.0f, 0.0f },
+                rotation,
+                style.color
+            );
 
         }
         position.x += width;
@@ -1935,31 +1963,26 @@ RTEXTJPAPI void RTextJPDraw(const char *text, Vector2 position, RTextJPStyle sty
     }
 }
 
-RTEXTJPAPI void RTextJPDrawEx(const char *text, Vector2 position, Vector2 origin, float rotation, float fontSize, float spacing, Color tint)
+RTEXTJPAPI void RTextJPDrawEx(const char *text, Vector2 position, Vector2 origin, float rotation, float fontSize, float spacing, RTextJPStyle style)
 {
     const char *cursor = text;
-    float offsetX = 0.0f;
 
     if (text == NULL) return;
 
+    style.fontSize = fontSize;
+    style.spacing = spacing;
+
     while (*cursor != '\0')
     {
-        int bytes = 0;
-        int codepoint = RTextJPUtf8Decode(cursor, &bytes);
+        RTextJPLineInternal line = rtextjp_next_line(cursor, 0.0f, style);
 
-        if (bytes <= 0) break;
+        rtextjp_draw_range_ex(line.begin, line.end, position, origin, rotation, style);
 
-        // 1. codepoint取得
-        // 2. glyph index取得
-        // 3. glyphのsource rect取得
-        // 4. glyphの描画サイズ計算
-        // 5. offsetXからローカル位置計算
-        // 6. originを考慮
-        // 7. rotation
-        // 8. DrawTextureProなどで描画
-        // 9. advance + spacing
+        if(line.next <= cursor) break;
 
-        cursor += bytes;
+        cursor = line.next;
+
+        position.y += style.fontSize + style.lineSpacing;
     }
 
 
