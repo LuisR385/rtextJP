@@ -36,9 +36,9 @@
 #include "raylib.h"
 
 #define RTEXTJP_VERSION_MAJOR 0
-#define RTEXTJP_VERSION_MINOR 1
+#define RTEXTJP_VERSION_MINOR 2
 #define RTEXTJP_VERSION_PATCH 0
-#define RTEXTJP_VERSION       "0.1.0"
+#define RTEXTJP_VERSION       "0.2.0"
 
 #if !defined(RTEXTJPAPI)
     #if defined(RTEXTJP_STATIC)
