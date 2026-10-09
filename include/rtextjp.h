@@ -11,7 +11,7 @@
 *   RTextJP is an unofficial Japanese text helper library for raylib.
 *   This project is not part of the official raylib distribution.
 *
-*   VERSION: 0.1.0
+*   VERSION: 0.2.0
 *
 *   日本語:
 *     いずれか1つの .c ファイルで RTEXTJP_IMPLEMENTATION を定義してから、このファイルを
@@ -30,6 +30,12 @@
 *
 *******************************************************************************************/
 
+/*
+* CHANGE LOG :
+*   v.0.2.0 Add text rotate API / native calculate rotation api / sample "text_rotate.c".
+*   v.0.1.0 first release.
+* 
+*/
 #ifndef RTEXTJP_H
 #define RTEXTJP_H
 
